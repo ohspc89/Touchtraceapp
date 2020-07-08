@@ -1,8 +1,41 @@
-__version__ = '1.0'
+#__version__ = '1.0'
 
-import kivy
-#kivy.require('1.0.6')
+''' 
+This script is adapted from the gallery example: "Touch Tracer Line Drawing Demonstration"
+(https://kivy.org/doc/stable/examples/gen_demo_touchtracer_main_py.html)
 
+..note from the original script::
+
+    A function 'calculate_points' handling the points which will be drawn
+    has by default implemented a delay of 5 steps. To get more precise visual
+    results lower the value of the optional keyword argument 'steps'.
+
+..points modified::
+
+    The original script         |  Adapted script
+    ----------------------------------------
+    - uses particle.png file    | - no trail visible
+      as the source for drawing | 
+      the trails                |
+    - cross-hairs with          | - no cross-hair/
+      the coordinates next to   |   no coordinates info
+      the touched point         |
+
+..points added::
+
+    There are four circular targets that a user needs to pass.
+    Once the touch gets near the center of the targets,
+    the colors of the targets will change to bright white.
+    The targets need to be visited in a pre-defined order.
+    Otherwise, they will never turn white.
+
+    When all targets are visited, their colors will be recovered.
+    A user needs to go through the process several times in total.
+    The number of repetition can be set in the parameter screen.
+'''
+ 
+
+import kivy 
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
@@ -18,26 +51,6 @@ from kivy.storage.jsonstore import JsonStore
 from kivy import platform
 
 timestamp = time.strftime("%Y%m%d_%H:%M:%S")
-
-'''
-if platform == 'android':
-    
-    from jnius import autoclass, cast, JavaException
-
-    try:
-        PythonActivity = autoclass('org.kivy.android.PythonActivity')
-    except JavaException:
-        PythonActivity = autoclass('org.renpy.android.PythonActivity')
-
-    Environment = autoclass('android.os.Environment')
-    context = cast('android.content.Context', PythonActivity.mActivity)
-    private_storage = context.getExternalFilesDir(Environment.getDatadirectory().getAbsolutePath()).getAbsolutePath()
-
-    store = JsonStore(".".join([private_storage, timestamp, 'json']))
-
-else:
-    store = JsonStore(".".join([timestamp, 'json']))
-'''
 
 from jnius import autoclass, cast 
 def _get_activity():
@@ -104,8 +117,9 @@ class ParamScreen(Screen):
 
         the_popup = ParamPopup(title = 'READ IT', size_hint = (None, None), size = (400, 400))
         
+        # If any of the items are not filled in, you can't proceed to the next screen
         if any([self.pid_text_input.text == "", self.age_text_input == "", self.gender == None, self.handed_chk == False]): 
-            the_popup.argh.text = private_storage 
+            the_popup.argh.text = "Missing values!" 
             the_popup.open()
 
         else:
@@ -114,7 +128,6 @@ class ParamScreen(Screen):
             global subj_info
             subj_info = {'age': self.age_text_input.text, 'gender': self.gender,
                     'right_used': self.ids.rightchk.active}
-            #store.put(subid, subj_info = subj_info)
             self.parent.current = "touchtracer"
 
     def if_active_m(self, state):
@@ -143,8 +156,8 @@ class Touchtracer(Screen):
         with self.canvas:
             Color(ud['color'], 1, 1, mode='hsv', group=g)
             ud['lines'] = [
-                Rectangle(pos=(touch.x, 0), size=(1, win.height), group=g),
-                Rectangle(pos=(0, touch.y), size=(win.width, 1), group=g),
+                #Rectangle(pos=(touch.x, 0), size=(1, win.height), group=g),
+                #Rectangle(pos=(0, touch.y), size=(win.width, 1), group=g),
                 Point(points=(touch.x, touch.y), source='particle.png',
                       pointsize=pointsize, group=g)]
 
@@ -158,8 +171,8 @@ class Touchtracer(Screen):
         if touch.grab_current is not self:
             return
         ud = touch.ud
-        ud['lines'][0].pos = touch.x, 0
-        ud['lines'][1].pos = 0, touch.y
+        #ud['lines'][0].pos = touch.x, 0
+        #ud['lines'][1].pos = 0, touch.y
 
         index = -1
 
@@ -200,16 +213,22 @@ class Touchtracer(Screen):
             ud[t] += 1
         self.update_touch_label(ud['label'], touch)
 
-        # Your touch should be somewhat close to the 'center' of the targets
+        # 'eps' is the threshold value for the position of a touch.
+        # If the x and y coordinatates of the touch are both within the
+        # square boundary whose sides all have the length of 'eps',
+        # then the target turns white.
         eps = cm(self.ids.t1.diameter*0.3) 
 
         white = (1, 1, 1, 1)
 
+        # The first target will turn white when the touch is near its center
         if all([abs(ud['label'].pos[0] - float(self.ids.t1.xcoord)) < eps, 
             abs(ud['label'].pos[1] - float(self.ids.t1.ycoord)) < eps]):
             self.ids.t1.customcolor = white
             self.ids.t1.is_touched = 1
 
+        # The second target will turn white if the touch is near its center
+        # and if the first target had been visited previously
         if all([self.ids.t1.is_touched == 1, 
             abs(ud['label'].pos[0] - float(self.ids.t2.xcoord)) < eps, 
             abs(ud['label'].pos[1] - float(self.ids.t2.ycoord)) < eps]):
@@ -222,6 +241,8 @@ class Touchtracer(Screen):
             self.ids.t3.customcolor = white
             self.ids.t3.is_touched = 1
 
+        # The fourth target should wait until the previous three are
+        # 'lightened up'
         if all([self.ids.t3.is_touched == 1,
             abs(ud['label'].pos[0] - float(self.ids.t4.xcoord)) < eps,
             abs(ud['label'].pos[1] - float(self.ids.t4.ycoord)) < eps]):
@@ -241,6 +262,7 @@ class Touchtracer(Screen):
         blue = (0, 0, 1, 0.5)
         purple = (0.5, 0.5, 1, 0.5)
 
+        # When all targets are visited, their original colors will be retrieved 
         if all([self.ids.t1.is_touched, self.ids.t2.is_touched, self.ids.t3.is_touched, self.ids.t4.is_touched]):
             self.ids.t1.customcolor = red
             self.ids.t1.is_touched = 0
@@ -260,8 +282,8 @@ class Touchtracer(Screen):
             popup2.open()
 
     def update_touch_label(self, label, touch):
-        label.text = 'ID: %s\nPos: (%d, %d)\nClass: %s' % (
-            touch.id, touch.x, touch.y, touch.__class__.__name__)
+        #label.text = 'ID: %s\nPos: (%d, %d)\nClass: %s' % (
+        #    touch.id, touch.x, touch.y, touch.__class__.__name__)
         label.texture_update()
         label.pos = touch.pos
         label.size = label.texture_size[0] + 20, label.texture_size[1] + 20
@@ -290,8 +312,8 @@ class screen_manager(ScreenManager):
     pass
 
 class TouchtracerApp(App):
-    title = 'Touchtracer'
-    icon = 'icon.png'
+    #title = 'Touchtracer'
+    #icon = 'icon.png'
 
     def build(self):
         return screen_manager(transition=FadeTransition())
