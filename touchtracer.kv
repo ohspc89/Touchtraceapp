@@ -1,0 +1,242 @@
+#:kivy 1.0
+#:import kivy kivy
+
+<Target@Widget>
+	customcolor: 1, 0, 0, 0.5
+	diameter: 3
+	canvas:
+		Color:
+			rgba: self.customcolor
+		Ellipse:
+			pos: self.x, self.y
+			size: cm(self.diameter), cm(self.diameter)
+
+<PTextInput@TextInput>:
+	font_size: 20
+	multiline: False
+	size_hint: (0.2, 0.2)
+	pos_hint:{'center_x': 0.55, 'center_y': 0.5}
+	focus: True
+
+<PLabel@Label>:
+	color: 0, 0, 0, 1
+	font_size: 20
+	pos_hint:{'center_x':0.2, 'center_y':0.5}
+
+<PButton@Button>:
+	color: 1, 1, 1, 1
+	font_size: 20
+	size_hint: (.2, .25)
+
+<PopupButton@Button>
+	background_normal: ""
+	background_color: 1, 1, 1, 1
+	size_hint: 0.6, 0.5
+	pos_hint: {"x": 0.2, "y":0.25}
+	font_size: 10 
+	haligh: 'center'
+
+<ParamPopup>:
+	argh: ppopup
+	PopupButton:
+		id: ppopup
+		color: 0, 0, 1, 1
+		on_press:
+			root.dismiss()
+
+<DonePopup>:
+	argh: dpopup
+	PopupButton:
+		id: dpopup
+		color: 0, 0, 1, 1
+		on_press:
+			app.root.current = "finish_screen"
+			root.dismiss()
+<ParamScreen>:
+	pid_text_input: pid
+	age_text_input: age
+	male_chkbox: malechk
+	female_chkbox: femalechk
+	left_chkbox: leftchk
+	right_chkbox: rightchk
+
+	BoxLayout:
+		orientation: "vertical"
+
+		canvas:
+			Color:
+				rgba: 1, 1, 1, 0.95
+			Rectangle:
+				size: self.right, self.top
+
+		RelativeLayout: 
+			PLabel:
+				text: "Participant ID"
+
+			PTextInput:
+				id: pid
+
+		RelativeLayout:
+			PLabel:
+				text: "Age"
+
+			PTextInput:
+				id: age
+				on_text_validate: age.focus = True
+
+		RelativeLayout:
+			PLabel:
+				text: "Gender"
+
+			CheckBox:
+				id: malechk
+				color: 0, 0, 0, 1
+				group: "Gender"
+				pos_hint: {'center_x':.4}
+				size_hint_x:0.1
+				on_active: root.if_active_m(self.active)
+
+			PLabel:
+				text: "Male"
+				pos_hint: {'center_x':.5}
+
+			CheckBox:
+				id: femalechk
+				color: 0, 0, 0, 1
+				group: "Gender"
+				pos_hint: {'center_x':.6}
+				size_hint_x:0.1
+				on_active: root.if_active_f(self.active)
+
+			PLabel:
+				text: "Female"
+				pos_hint: {'center_x': .7}
+
+		RelativeLayout:
+			PLabel:
+				text: "Dominant hand"
+				pos_hint: {'center_x':0.2}
+
+			CheckBox:
+				id: leftchk
+				color: 0, 0, 0, 1
+				group: "dominant_hand"
+				pos_hint:{'center_x':.4}
+				size_hint_x: 0.1
+				on_active: root.if_active_hnd(self.active)
+
+			PLabel:
+				text: "Left"
+				pos_hint: {'center_x':.5}
+
+			CheckBox:
+				id: rightchk
+				color: 0, 0, 0, 1
+				group: "dominant_hand"
+				pos_hint: {'center_x':.6}
+				size_hint_x: 0.1
+				on_active: root.if_active_hnd(self.active)
+
+			PLabel:
+				text: "Right"
+				pos_hint: {'center_x':.7}
+
+		RelativeLayout:
+
+			PButton:
+				id: next1
+				text: "Next"
+				pos_hint: {'center_x': 0.6, 'center_y': 0.4}
+				on_press:
+					root.show_popup()
+<Touchtracer>:
+    canvas:
+        Color:
+            rgb: 1, 1, 1
+        Rectangle:
+            source: 'data/images/background.jpg'
+            size: self.size
+
+	
+#    BoxLayout:
+#        padding: '10dp'
+#        spacing: '10dp'
+#        size_hint: 1, None
+#        pos_hint: {'top': 1}
+#        height: '44dp'
+#        Image:
+#            size_hint: None, None
+#            size: '24dp', '24dp'
+#            source: 'data/logo/kivy-icon-64.png'
+#            mipmap: True
+#        Label:
+#            height: '24dp'
+#            text_size: self.width, None
+#            color: (1, 1, 1, .8)
+#            text: 'Kivy %s - Touchtracer' % kivy.__version__
+#            valign: 'middle'
+
+	FloatLayout
+		Target:
+			id: t1
+			pos_hint:{'x':0.1, 'y':0.6}
+			customcolor: 1, 0, 0, 0.5
+			is_touched: 0
+			xcoord: self.x + cm(self.diameter*0.5)
+			ycoord: self.y + cm(self.diameter*0.5)
+				
+
+		Target:
+			id: t2
+			pos_hint:{'x':0.3, 'y':0.2}
+			customcolor: 0, 1, 0, 0.5
+			is_touched: 0
+			xcoord: self.x + cm(self.diameter*0.5)
+			ycoord: self.y + cm(self.diameter*0.5)
+
+		Target:
+			id: t3
+			pos_hint:{'x':0.5, 'y':0.6}
+			customcolor: 0, 0, 1, 0.5
+			is_touched: 0
+			xcoord: self.x + cm(self.diameter*0.5)
+			ycoord: self.y + cm(self.diameter*0.5)
+
+		Target:
+			id: t4
+			pos_hint:{'x':0.7, 'y':0.2}
+			customcolor: 0.5, 0.5, 1, 0.5 
+			is_touched: 0
+			all_touched: 0
+			xcoord: self.x + cm(self.diameter*0.5)
+			ycoord: self.y + cm(self.diameter*0.5)
+
+<FinishScreen>:
+	FloatLayout:
+		canvas:
+			Color:
+				rgb: 0.5, 0.5, 0.5
+
+		PLabel:
+			text: "Bye bye!"
+			pos_hint: {'center_x':0.5, 'center_y': 0.5} 
+
+		PButton:
+			id: go_back 
+			text: "Return"
+			pos_hint: {'center_x': 0.5, 'center_y': 0.3}
+			on_press:
+				root.start_new()
+
+<screen_manager>:
+	ParamScreen:
+		id: paramsc
+		name: 'param_screen'
+
+	Touchtracer:
+		id: touchtr
+		name: 'touchtracer'
+
+	FinishScreen:
+		id: finishsc
+		name: 'finish_screen'
