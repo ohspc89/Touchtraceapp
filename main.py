@@ -123,11 +123,10 @@ class ParamScreen(Screen):
             the_popup.open()
 
         else:
-            global subid
             subid = "_".join(["SUBJ", self.pid_text_input.text])
-            global subj_info
             subj_info = {'age': self.age_text_input.text, 'gender': self.gender,
                     'right_used': self.ids.rightchk.active}
+            store.put(subid, subj_info = subj_info)
             self.parent.current = "touchtracer"
 
     def if_active_m(self, state):
@@ -287,15 +286,8 @@ class Touchtracer(Screen):
         label.texture_update()
         label.pos = touch.pos
         label.size = label.texture_size[0] + 20, label.texture_size[1] + 20
-        store.put(subid, subj_info = subj_info, time = str(touch.time_update), pos = [str(touch.x), str(touch.y)])
-
-    def transform_target(self):
-        self.ids.t1.customcolor = 1, 0, 0, 0.5
-
-    # When you press the "Next" button, you go to the finish screen
-    def go_to_end(self):
-        print(self.ids.t1.x)
-        self.parent.current = "finish_screen"
+        # The way time / position stored could be improved...
+        store.put(str(touch.time_update), pos = [str(touch.x), str(touch.y)])
 
 class FinishScreen(Screen):
 
